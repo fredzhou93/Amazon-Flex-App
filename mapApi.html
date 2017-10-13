@@ -56,18 +56,85 @@
         document.getElementById('end').addEventListener('change', onChangeHandler);
       }
 
-      function calculateAndDisplayRoute(directionsService, directionsDisplay) {
-        directionsService.route({
-          origin: document.getElementById('start').value,
-          destination: document.getElementById('end').value,
-          travelMode: 'DRIVING'
-        }, function(response, status) {
-          if (status === 'OK') {
-            directionsDisplay.setDirections(response);
-          } else {
-            window.alert('Directions request failed due to ' + status);
+
+      // locker information
+      var lockers = [{
+          "name":"Island locker",
+          "status":"empty",
+          "location":[40.7591, -73.9533]
+      },{
+          "name":"NYC locker",
+          "status":"empty",
+          "location":[40.71427, -74.00597]
+      }];
+
+      // package information
+      var packages = [{
+          "name":"Item1",
+          "startLocation": "Island locker",
+          "endLocation": [40.71427, -74.00597]
+      },{
+          "name":"Item2",
+          "startLocation": "Island locker",
+          "endLocation": [40.71427, -73.00597]
+      }];
+
+
+      // distance between two point in metre
+      function calcDistance(p1, p2) {
+          return (google.maps.geometry.spherical.computeDistanceBetween(p1, p2)).toFixed(2);
+      }
+
+      var lockerList1;
+      var lockerList2;
+      // find available lockers based on 
+      function findAvailableLockers(position, check,directionsService, directionsDisplay) {
+        var availableLockers = [];
+        var geocoder = new google.maps.Geocoder();
+        geocoder.geocode( { 'address': position}, function(results, status) {
+          if (status == google.maps.GeocoderStatus.OK) {
+              var latitude = results[0].geometry.location.lat();
+              var longitude = results[0].geometry.location.lng();
+              var startPosition = new google.maps.LatLng(latitude, longitude);
+
+              lockers.forEach(function (locker) {
+                  var lockerPosition = new google.maps.LatLng(locker.location[0], locker.location[1]);
+                  var distance = calcDistance(lockerPosition, startPosition);
+                  console.log(locker.name, 'distance:' ,distance);
+                  if (distance < 500){
+                    availableLockers.push([locker.name]);
+                  } 
+              });
+              gatherLockers(availableLockers, check,directionsService, directionsDisplay);
+           }
+        }); 
+      }
+
+      function gatherLockers(lockers, status, directionsService, directionsDisplay) {
+          if (status == 'start') lockerList1 = lockers;
+          if (status == 'end') lockerList2 = lockers;
+          
+          console.log(lockerList1);
+          console.log(lockerList2);
+          if (status == 'end') {
+                directionsService.route({
+                origin: document.getElementById('start').value,
+                destination: document.getElementById('end').value,
+                travelMode: 'TRANSIT'
+              }, function(response, status) {
+                if (status === 'OK') {
+                  directionsDisplay.setDirections(response);
+              }
+            });
           }
-        });
+      }
+
+     
+      function calculateAndDisplayRoute(directionsService, directionsDisplay) {
+        var start = document.getElementById('start').value;
+        var end = document.getElementById('end').value;
+        findAvailableLockers(start, 'start',directionsService,directionsDisplay);
+        findAvailableLockers(end, 'end',directionsService,directionsDisplay);
       }
     </script>
     <script async defer

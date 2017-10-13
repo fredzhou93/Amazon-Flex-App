@@ -5,7 +5,7 @@ export default class App extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <Text>This is Amazon Flyx!</Text>
+        <Text>This is Amazon Flyx new!</Text>
       </View>
     );
   }
