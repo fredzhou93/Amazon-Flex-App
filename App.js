@@ -75,18 +75,27 @@ class HomeScreen extends React.Component {
           onEndEditing={this.handleKeyDown}
         />
         </View>
-
+        { this.state.routeLoaded ? (
           <View style={styles.packageSuggestion}>
+            <Text style={styles.prompt}>We found a new oppurtunity for you!</Text>
             <View style={styles.packageFlex}>
               <Image
-                style={{width: 66, height: 58}}
+                style={{width: 40, height: 40}}
                 source={require('./assets/package.jpg')}
               />
-              <Text style={styles.prompt}>We found a new oppurtunity for you.</Text>
+              <Text style={{marginLeft: 15, marginTop:7, fontSize:20, color: '#ff9900'}}>{this.state.message}</Text>
             </View>
-            <Text>{this.state.message}</Text>
-            <Text>Please pick up the package at {this.state.startLocker} and drop off the package at {this.state.endLocker}</Text>
-          </View>
+            <View style={{flexDirection: 'row'}}>
+              <Text>Please pick up the package at</Text>
+              <Text style={{marginLeft:3, color:'#ff9900'}}>{this.state.startLocker}</Text>
+              <Text style={{marginLeft:3}}>and drop off</Text>
+            </View>
+            <View style={{flexDirection: 'row'}}>
+              <Text>the package at</Text>
+              <Text style={{marginLeft:3, color: '#ff9900'}}>{this.state.endLocker}.</Text>
+            </View>
+          </View>) : null
+        }
         <WebView
           ref={( webView ) => this.webView = webView}
           source={ mapHTML }
@@ -110,7 +119,8 @@ const styles = StyleSheet.create({
   },
   TitleDiv: {
     backgroundColor:'#146eb4',
-    paddingTop: 30
+    paddingTop: 30,
+    paddingBottom: 5
   },
   InputBox: {
     height: 30,
@@ -130,8 +140,13 @@ const styles = StyleSheet.create({
   },
   packageSuggestion: {
     backgroundColor: '#f2f2f2',
+    padding: 10
   },
   packageFlex: {
     flexDirection: 'row'
+  },
+  prompt: {
+    fontSize: 20,
+    color: '#ff9900'
   }
 });

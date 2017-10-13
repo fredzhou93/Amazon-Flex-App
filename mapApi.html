@@ -72,12 +72,12 @@
         });
         directionsDisplay.setMap(map);
 
-        var marker = new google.maps.Marker({
-          center: {lat: 40.71427, lng: -74.00597},
-          map: map,
-          title: 'Test'
-        });
-        marker.setMat(map);
+        // var marker = new google.maps.Marker({
+        //   center: {lat: 40.71427, lng: -74.00597},
+        //   map: map,
+        //   title: 'Test'
+        // });
+        // marker.setMat(map);
         // var onChangeHandler = function() {
         //   calculateAndDisplayRoute(directionsService, directionsDisplay);
         // };
@@ -144,7 +144,6 @@
               }, function(response, status) {
                 if (status === 'OK') {
                   directionsDisplay.setDirections(response);
-                  //drawCircle();
                   window.postMessage(JSON.stringify(okPackageList[0]));
               }
             });
