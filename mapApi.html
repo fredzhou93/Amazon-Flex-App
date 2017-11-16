@@ -32,32 +32,14 @@
     </style>
   </head>
   <body>
-    <div id="floating-panel">
+    <!-- <div id="floating-panel">
     <b>Start: </b>
    <input type="text" name="start" id = "start" placeholder="Enter your start position"><br>
     <b>End:  </b>
    <input type="text" name="end" id = "end" placeholder="Enter your start position"><br>
-    </div>
+    </div> -->
     <div id="map"></div>
     <script>
-      function initMap() {
-        var directionsService = new google.maps.DirectionsService;
-        var directionsDisplay = new google.maps.DirectionsRenderer;
-        var map = new google.maps.Map(document.getElementById('map'), {
-          zoom: 7,
-          center: {lat: 41.85, lng: -87.65}
-        });
-        directionsDisplay.setMap(map);
-
-        var onChangeHandler = function() {
-          calculateAndDisplayRoute(directionsService, directionsDisplay);
-        };
-        document.getElementById('start').addEventListener('change', onChangeHandler);
-        document.getElementById('end').addEventListener('change', onChangeHandler);
-      }
-
-
-      // locker information
       var lockers = [{
           "name":"Island locker",
           "status":"empty",
@@ -67,27 +49,47 @@
           "status":"empty",
           "location":[40.71427, -74.00597]
       }];
-
       // package information
       var packages = [{
-          "name":"Item1",
+          "name":"Package-XBG382X3",
           "startLocation": "Island locker",
-          "endLocation": [40.71427, -74.00597]
+          "endLocation": "NYC locker"
       },{
           "name":"Item2",
           "startLocation": "Island locker",
-          "endLocation": [40.71427, -73.00597]
+          "endLocation": "Random Locker"
       }];
+      var startPosition = '';
+      var endPosition = '';
+      function initMap() {
+        var directionsService = new google.maps.DirectionsService;
+        var directionsDisplay = new google.maps.DirectionsRenderer;
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 10,
+          center: {lat: 40.7, lng: -74.0}
+        });
+        directionsDisplay.setMap(map);
 
-
+        document.addEventListener("message", function(data) {
+          var location = JSON.parse(data.data);
+          startPosition = location.start;
+          endPosition = location.end;
+          calculateAndDisplayRoute(directionsService, directionsDisplay);
+        });
+        window.addEventListener("message", function(data) {
+          var location = JSON.parse(data.data);
+          startPosition = data.start;
+          endPosition = data.end;
+          calculateAndDisplayRoute(directionsService, directionsDisplay);
+        });
+      }
       // distance between two point in metre
       function calcDistance(p1, p2) {
           return (google.maps.geometry.spherical.computeDistanceBetween(p1, p2)).toFixed(2);
       }
-
       var lockerList1;
       var lockerList2;
-      // find available lockers based on 
+      // find available lockers based on
       function findAvailableLockers(position, check,directionsService, directionsDisplay) {
         var availableLockers = [];
         var geocoder = new google.maps.Geocoder();
@@ -96,49 +98,82 @@
               var latitude = results[0].geometry.location.lat();
               var longitude = results[0].geometry.location.lng();
               var startPosition = new google.maps.LatLng(latitude, longitude);
-
               lockers.forEach(function (locker) {
                   var lockerPosition = new google.maps.LatLng(locker.location[0], locker.location[1]);
                   var distance = calcDistance(lockerPosition, startPosition);
-                  console.log(locker.name, 'distance:' ,distance);
-                  if (distance < 500){
-                    availableLockers.push([locker.name]);
-                  } 
+                  //console.log(locker.name, 'distance:' ,distance);
+                  if (distance < 600){
+                    availableLockers.push(locker.name);
+                  }
               });
-              gatherLockers(availableLockers, check,directionsService, directionsDisplay);
+              gatherLockers(availableLockers, check, directionsService, directionsDisplay);
            }
-        }); 
+        });
       }
-
       function gatherLockers(lockers, status, directionsService, directionsDisplay) {
           if (status == 'start') lockerList1 = lockers;
           if (status == 'end') lockerList2 = lockers;
-          
-          console.log(lockerList1);
-          console.log(lockerList2);
           if (status == 'end') {
+            let okPackageList = [];
+            packages.forEach(function(item) {
+              if (lockerList1.includes(item.startLocation) && lockerList2.includes(item.endLocation)) {
+                okPackageList.push(item);
+              }
+            });
                 directionsService.route({
-                origin: document.getElementById('start').value,
-                destination: document.getElementById('end').value,
+                origin: startPosition,
+                destination: endPosition,
                 travelMode: 'TRANSIT'
               }, function(response, status) {
                 if (status === 'OK') {
+                  var map = new google.maps.Map(document.getElementById('map'), {
+                    zoom: 10,
+                    center: {lat: 40.7, lng: -74.0}
+                  });
+                  directionsDisplay.setMap(map);
                   directionsDisplay.setDirections(response);
+                  if (okPackageList.length != 0) {
+                    var marker1 = new google.maps.Marker({
+                      position:{lat: 40.71427, lng: -74.00597},
+                      map: map,
+                      title: 'NYC locker',
+                      icon: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
+                    });
+
+                    var marker2 = new google.maps.Marker({
+                      position:{lat: 40.7591, lng:  -73.9533},
+                      map: map,
+                      title: 'island locker',
+                      icon: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
+                    });
+                  
+                    window.postMessage(JSON.stringify(okPackageList[0]));
+                  }
+                  else {
+                    window.postMessage("Nothing");
+                  }
               }
             });
           }
       }
-
-     
+      // function drawCircle() {
+      //   var circle = new google.maps.Circle({
+      //     center: {lat: 40.71427, lng: -74.00597},
+      //     strokeColor:'#FF0000',
+      //     strokeOpacity: 0.8,
+      //     strokeWeight: 2,
+      //     fillColor: '#FF0000',
+      //     radius: 100
+      //   });
+      //   circle.setMat(map);
+      // }
       function calculateAndDisplayRoute(directionsService, directionsDisplay) {
-        var start = document.getElementById('start').value;
-        var end = document.getElementById('end').value;
-        findAvailableLockers(start, 'start',directionsService,directionsDisplay);
-        findAvailableLockers(end, 'end',directionsService,directionsDisplay);
+        findAvailableLockers(startPosition, 'start', directionsService, directionsDisplay);
+        findAvailableLockers(endPosition, 'end', directionsService, directionsDisplay);
       }
     </script>
     <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBWJjHRaWQyhU-ovXxH-BlS9KCZprFDmlk&callback=initMap">
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBWJjHRaWQyhU-ovXxH-BlS9KCZprFDmlk&callback=initMap">
     </script>
   </body>
 </html>
