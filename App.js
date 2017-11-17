@@ -46,7 +46,21 @@ class HomeScreen extends React.Component {
   };
 
   correspondPoint(event) {
-    console.log(event);
+    if(event == 'RI Station') {
+      let locationInfo = {
+        start: this.state.startLocation,
+        end: this.state.endLocation,
+        route: 1
+      }
+      this.webView.postMessage(JSON.stringify(locationInfo));
+    } else {
+      let locationInfo = {
+        start: this.state.startLocation,
+        end: this.state.endLocation,
+        route: 2
+      }
+      this.webView.postMessage(JSON.stringify(locationInfo));
+    }
   }
 
   handleKeyDown(event) {
@@ -81,7 +95,8 @@ class HomeScreen extends React.Component {
     this.setState({ endLocation: 'New York City Hall'});
     let locationInfo = {
       start: this.state.startLocation,
-      end: this.state.endLocation
+      end: this.state.endLocation,
+      route: 0
     }
 
     this.webView.postMessage(JSON.stringify(locationInfo));
@@ -148,7 +163,7 @@ class HomeScreen extends React.Component {
                   subtitleStyle={{ fontSize: 10}}
                   hideChevron={true}
                   containerStyle={{ borderBottomWidth: 0 }}
-                  onPress={() => this.correspondPoint(item.key)}
+                  onPress={() => this.correspondPoint(item.end)}
                 />
               )}
                 ItemSeparatorComponent={this.renderSeparator}
@@ -214,7 +229,8 @@ class ChatScreen extends React.Component {
     this.setState({ endLocation: params.end });
     let locationInfo = {
       start: params.start,
-      end: params.end
+      end: params.end,
+      route: 1
     }
     setTimeout(() => {
       this.refs.newWebView.postMessage(JSON.stringify(locationInfo));
@@ -250,7 +266,6 @@ class ChatScreen extends React.Component {
                   containerStyle={{ borderBottomWidth: 0 }}
                 />
               )}
-
                 ItemSeparatorComponent={this.renderSeparator}
               />
             </List>

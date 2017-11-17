@@ -94,12 +94,14 @@
           var location = JSON.parse(data.data);
           startPosition = location.start;
           endPosition = location.end;
+          route = location.route;
           calculateAndDisplayRoute(directionsService, directionsDisplay);
         });
         window.addEventListener("message", function(data) {
           var location = JSON.parse(data.data);
           startPosition = data.start;
           endPosition = data.end;
+          route = location.route;
           calculateAndDisplayRoute(directionsService, directionsDisplay);
         });
       }
@@ -110,7 +112,7 @@
       var lockerList1;
       var lockerList2;
       // find available lockers based on
-      function findAvailableLockers(position, check,directionsService, directionsDisplay) {
+      function findAvailableLockers(position, check,directionsService, directionsDisplay, route) {
         var availableLockers = [];
         var geocoder = new google.maps.Geocoder();
         geocoder.geocode( { 'address': position}, function(results, status) {
@@ -126,11 +128,11 @@
                     availableLockers.push(locker.name);
                   }
               });
-              gatherLockers(availableLockers, check, directionsService, directionsDisplay);
+              gatherLockers(availableLockers, check, directionsService, directionsDisplay, route);
            }
         });
       }
-      function gatherLockers(lockers, status, directionsService, directionsDisplay) {
+      function gatherLockers(lockers, status, directionsService, directionsDisplay, option) {
           if (status == 'start') lockerList1 = lockers;
           if (status == 'end') lockerList2 = lockers;
           if (status == 'end') {
@@ -149,7 +151,7 @@
 
                   directionsDisplay.setOptions({
                     TransitOptions: {
-                      departureTime: new Date(2017, 11, 18, 15, 0, 0) 
+                      departureTime: new Date(2017, 11, 18, 15, 0, 0)
                     }
                   });
 
@@ -161,8 +163,6 @@
                   directionsDisplay.setDirections(response);
 
                   if (okPackageList.length != 0) {
-
-                      option = 2;
 
                       if (option == 0 || option == 1){
                           var marker1 = new google.maps.Marker({
@@ -204,16 +204,16 @@
                         map: map,
                         title: 'Washington Square Park locker',
                         icon: 'http://maps.google.com/mapfiles/ms/icons/purple-dot.png'
-                      });    
+                      });
                     }
-             
+
                     window.postMessage(JSON.stringify(okPackageList[0]));
                   }
                   else {
                     window.postMessage("Nothing");
                   }
 
-           
+
                   taggle(map, directionsService, option);
               }
             });
@@ -247,7 +247,7 @@
 
                 var request = {
                     origin: first,
-                    destination: second,    
+                    destination: second,
                     travelMode: google.maps.TravelMode.TRANSIT
                 };
                 directionsService.route(request, function (response, status) {
@@ -259,14 +259,14 @@
                           }
                         });
                         directionsDisplay2.setDirections(response);
-                    } 
+                    }
                 })
              }
       }
 
       function calculateAndDisplayRoute(directionsService, directionsDisplay) {
-        findAvailableLockers(startPosition, 'start', directionsService, directionsDisplay);
-        findAvailableLockers(endPosition, 'end', directionsService, directionsDisplay);
+        findAvailableLockers(startPosition, 'start', directionsService, directionsDisplay, route);
+        findAvailableLockers(endPosition, 'end', directionsService, directionsDisplay, route);
       }
     </script>
     <script async defer
