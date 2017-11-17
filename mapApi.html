@@ -47,7 +47,19 @@
       },{
           "name":"NYC locker",
           "status":"empty",
-          "location":[40.71427, -74.00597]
+          "location":[40.7128732,-74.010685]
+      },{
+          "name":"Empire State Building",
+          "status":"empty",
+          "location":[40.7461457,-73.9885077]
+      },{
+          "name":"Cornell Tech locker",
+          "status":"empty",
+          "location":[40.754542, -73.955599]
+      },{
+          "name":"Washington Square Park locker",
+          "status":"empty",
+          "location":[40.7308268,-73.99952]
       }];
       // package information
       var packages = [{
@@ -58,6 +70,14 @@
           "name":"Item2",
           "startLocation": "Island locker",
           "endLocation": "Random Locker"
+      },{
+          "name":"Package-XBG472L6",
+          "startLocation": "Cornell Tech locker",
+          "endLocation": "Empire State Building"
+      },{
+          "name":"Package-XBG497L1",
+          "startLocation": "Cornell Tech locker",
+          "endLocation": "Washington Square Park locker"
       }];
       var startPosition = '';
       var endPosition = '';
@@ -102,7 +122,7 @@
                   var lockerPosition = new google.maps.LatLng(locker.location[0], locker.location[1]);
                   var distance = calcDistance(lockerPosition, startPosition);
                   //console.log(locker.name, 'distance:' ,distance);
-                  if (distance < 600){
+                  if (distance < 1000){
                     availableLockers.push(locker.name);
                   }
               });
@@ -132,9 +152,10 @@
                   });
                   directionsDisplay.setMap(map);
                   directionsDisplay.setDirections(response);
+
                   if (okPackageList.length != 0) {
                     var marker1 = new google.maps.Marker({
-                      position:{lat: 40.71427, lng: -74.00597},
+                      position:{lat: 40.7128732, lng: -74.010685},
                       map: map,
                       title: 'NYC locker',
                       icon: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
@@ -146,12 +167,65 @@
                       title: 'island locker',
                       icon: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
                     });
+
+                    var marker3 = new google.maps.Marker({
+                      position:{lat: 40.754542, lng:  -73.955599},
+                      map: map,
+                      title: 'Cornell Tech locker',
+                      icon: 'http://maps.google.com/mapfiles/ms/icons/purple-dot.png'
+                    });
+
+                    var marker4 = new google.maps.Marker({
+                      position:{lat: 40.7461457, lng: -73.9885077},
+                      map: map,
+                      title: 'Empire State Building',
+                      icon: 'http://maps.google.com/mapfiles/ms/icons/purple-dot.png'
+                    });
+
+                    var marker5 = new google.maps.Marker({
+                      position:{lat: 40.7308268, lng: -73.99952},
+                      map: map,
+                      title: 'Washington Square Park locker',
+                      icon: 'http://maps.google.com/mapfiles/ms/icons/purple-dot.png'
+                    });
+
+
                   
                     window.postMessage(JSON.stringify(okPackageList[0]));
                   }
                   else {
                     window.postMessage("Nothing");
                   }
+
+
+
+
+                  directionsDisplay2 = new google.maps.DirectionsRenderer({
+                      suppressMarkers: false,
+                      suppressInfoWindows: true
+                  });
+                  directionsDisplay2.setMap(map);
+
+                  var start = new google.maps.LatLng(40.7461457,-73.9885077);
+                  var end = new google.maps.LatLng(40.7308268,-73.99952);
+                  var request = {
+                      origin: start,
+                      destination: end,
+                      travelMode: google.maps.TravelMode.TRANSIT
+                  };
+                  directionsService.route(request, function (response, status) {
+                      if (status == google.maps.DirectionsStatus.OK) {
+                          directionsDisplay2.setOptions({
+                            polylineOptions: {
+                              strokeColor: 'red'
+                            }
+                          });
+                          directionsDisplay2.setDirections(response);
+                      } 
+                  })
+
+
+
               }
             });
           }
