@@ -47,7 +47,19 @@
       },{
           "name":"NYC locker",
           "status":"empty",
-          "location":[40.71427, -74.00597]
+          "location":[40.7128732,-74.010685]
+      },{
+          "name":"Empire State Building",
+          "status":"empty",
+          "location":[40.7461457,-73.9885077]
+      },{
+          "name":"Cornell Tech locker",
+          "status":"empty",
+          "location":[40.754542, -73.955599]
+      },{
+          "name":"Washington Square Park locker",
+          "status":"empty",
+          "location":[40.7308268,-73.99952]
       }];
       // package information
       var packages = [{
@@ -58,6 +70,14 @@
           "name":"Item2",
           "startLocation": "Island locker",
           "endLocation": "Random Locker"
+      },{
+          "name":"Package-XBG472L6",
+          "startLocation": "Cornell Tech locker",
+          "endLocation": "Empire State Building"
+      },{
+          "name":"Package-XBG497L1",
+          "startLocation": "Cornell Tech locker",
+          "endLocation": "Washington Square Park locker"
       }];
       var startPosition = '';
       var endPosition = '';
@@ -102,7 +122,7 @@
                   var lockerPosition = new google.maps.LatLng(locker.location[0], locker.location[1]);
                   var distance = calcDistance(lockerPosition, startPosition);
                   //console.log(locker.name, 'distance:' ,distance);
-                  if (distance < 600){
+                  if (distance < 1000){
                     availableLockers.push(locker.name);
                   }
               });
@@ -126,47 +146,124 @@
                 travelMode: 'TRANSIT'
               }, function(response, status) {
                 if (status === 'OK') {
+
+                  directionsDisplay.setOptions({
+                    TransitOptions: {
+                      departureTime: new Date(2017, 11, 18, 15, 0, 0) 
+                    }
+                  });
+
                   var map = new google.maps.Map(document.getElementById('map'), {
                     zoom: 10,
                     center: {lat: 40.7, lng: -74.0}
                   });
                   directionsDisplay.setMap(map);
                   directionsDisplay.setDirections(response);
-                  if (okPackageList.length != 0) {
-                    var marker1 = new google.maps.Marker({
-                      position:{lat: 40.71427, lng: -74.00597},
-                      map: map,
-                      title: 'NYC locker',
-                      icon: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
-                    });
 
-                    var marker2 = new google.maps.Marker({
-                      position:{lat: 40.7591, lng:  -73.9533},
-                      map: map,
-                      title: 'island locker',
-                      icon: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
-                    });
-                  
+                  if (okPackageList.length != 0) {
+
+                      option = 2;
+
+                      if (option == 0 || option == 1){
+                          var marker1 = new google.maps.Marker({
+                            position:{lat: 40.7128732, lng: -74.010685},
+                            map: map,
+                            title: 'NYC locker',
+                            icon: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
+                          });
+
+                          var marker2 = new google.maps.Marker({
+                            position:{lat: 40.7591, lng:  -73.9533},
+                            map: map,
+                            title: 'island locker',
+                            icon: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
+                          });
+                      }
+
+
+
+                      if (option == 0 || option == 2){
+                          var marker3 = new google.maps.Marker({
+                            position:{lat: 40.754542, lng:  -73.955599},
+                            map: map,
+                            title: 'Cornell Tech locker',
+                            icon: 'http://maps.google.com/mapfiles/ms/icons/orange-dot.png'
+                          });
+
+                          var marker4 = new google.maps.Marker({
+                            position:{lat: 40.7461457, lng: -73.9885077},
+                            map: map,
+                            title: 'Empire State Building',
+                            icon: 'http://maps.google.com/mapfiles/ms/icons/orange-dot.png'
+                          });
+                      }
+
+                    if (option == 0 ){
+                       var marker5 = new google.maps.Marker({
+                        position:{lat: 40.7308268, lng: -73.99952},
+                        map: map,
+                        title: 'Washington Square Park locker',
+                        icon: 'http://maps.google.com/mapfiles/ms/icons/purple-dot.png'
+                      });    
+                    }
+             
                     window.postMessage(JSON.stringify(okPackageList[0]));
                   }
                   else {
                     window.postMessage("Nothing");
                   }
+
+           
+                  taggle(map, directionsService, option);
               }
             });
           }
       }
-      // function drawCircle() {
-      //   var circle = new google.maps.Circle({
-      //     center: {lat: 40.71427, lng: -74.00597},
-      //     strokeColor:'#FF0000',
-      //     strokeOpacity: 0.8,
-      //     strokeWeight: 2,
-      //     fillColor: '#FF0000',
-      //     radius: 100
-      //   });
-      //   circle.setMat(map);
-      // }
+
+      function taggle(map, directionsService, option) {
+
+            directionsDisplay2 = new google.maps.DirectionsRenderer({
+                suppressMarkers: true,
+                suppressInfoWindows: true
+            });
+            directionsDisplay2.setMap(map);
+
+            if (option == 1 || option == 2 || option == 3){
+                    color = 'red';
+                    if (option == 1){
+                        first = new google.maps.LatLng(40.7591, -73.9533);  //island locker
+                        second = new google.maps.LatLng(40.7128732,-74.010685);   // NYC locker
+                        color = 'yellow';
+                    }
+                    if (option == 2){
+                        first = new google.maps.LatLng(40.754542, -73.955599);   // Cornell tech locker
+                        second = new google.maps.LatLng(40.7461457,-73.9885077);   // Empire State Building
+                        color = 'orange';
+                    }
+                    if (option == 3){
+                        first = new google.maps.LatLng(40.754542, -73.955599);   // Cornell tech locker
+                        second = new google.maps.LatLng(40.7308268,-73.99952);    // Washington Square Park locker
+                    }
+
+                var request = {
+                    origin: first,
+                    destination: second,    
+                    travelMode: google.maps.TravelMode.TRANSIT
+                };
+                directionsService.route(request, function (response, status) {
+                    if (status == google.maps.DirectionsStatus.OK) {
+                        directionsDisplay2.setOptions({
+                          polylineOptions: {
+                            strokeColor: color,
+                            strokeWeight: 4
+                          }
+                        });
+                        directionsDisplay2.setDirections(response);
+                    } 
+                })
+             }
+      }
+
       function calculateAndDisplayRoute(directionsService, directionsDisplay) {
         findAvailableLockers(startPosition, 'start', directionsService, directionsDisplay);
         findAvailableLockers(endPosition, 'end', directionsService, directionsDisplay);
