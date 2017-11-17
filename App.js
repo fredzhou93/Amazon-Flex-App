@@ -5,14 +5,161 @@ import { StackNavigator } from 'react-navigation';
 import { Font } from 'expo';
 const mapHTML = require('./mapApi.html');
 
+class AppScreen extends React.Component {
+  static navigationOptions = {
+  };
+
+  render() {
+    const { navigate } = this.props.navigation;
+    return (
+      <View style={styles.Container}>
+          <Image
+              style={{width: 420, height: 626}}
+              source={require('./assets/handtohand.jpg')}
+          />
+          <Text style={{backgroundColor: 'rgba(0,0,0,0)', position:'absolute',top:400, textAlign:'center', fontSize: 40, width: 300, marginLeft: 50}}>
+            Earn as you go, there's no better way.
+          </Text>
+          <Button
+            raised
+            containerViewStyle={{width:'100%', marginLeft: 0}}
+            iconRight={{name: 'directions'}}
+            backgroundColor='#ff9900'
+            color='white'
+            title='Sign in'
+            onPress={() => navigate('Main')}  />
+      </View>
+    );
+  }
+}
+
+class ChatScreen extends React.Component {
+  static navigationOptions = {
+    title: 'Map Instruction',
+    headerStyle: { backgroundColor: '#146eb4' },
+    headerTitleStyle: {
+        fontSize: 20,
+        color: 'white'
+        }
+  };
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      startLocation: '',
+      endLocation: '',
+      routeLoaded: false,
+      showInstruction: false,
+      showQRCode: false
+   };
+   this.toggleInstruction = this.toggleInstruction.bind(this);
+   this.toggleQR = this.toggleQR.bind(this)
+  }
+
+  toggleQR() {
+    this.setState({showInstruction: false});
+    this.setState({showQRCode: !this.showQRCode});
+  }
+
+  renderSeparator = () => {
+    return (
+      <View
+        style={{
+          height: 1,
+          width: "90%",
+          backgroundColor: "#CED0CE",
+          marginLeft: "10%"
+        }}
+      />
+    );
+  };
+
+  toggleInstruction() {
+    this.setState({showQRCode: false});
+    this.setState({showInstruction: !this.state.showInstruction});
+  }
+
+  componentDidMount() {
+    const { params } = this.props.navigation.state;
+    this.setState({ startLocation: params.start });
+    this.setState({ endLocation: params.end });
+    let locationInfo = {
+      start: params.start,
+      end: params.end,
+      route: 1
+    }
+    setTimeout(() => {
+      this.refs.newWebView.postMessage(JSON.stringify(locationInfo));
+    }, 300);
+    this.setState({routeLoaded: true});
+  }
+
+  render() {
+    return (
+      <View style={styles.Container}>
+        <WebView
+          ref='newWebView'
+          source={ mapHTML }
+          style={{flex:1}}
+          />
+          { this.state.showInstruction ? (
+          <View style={{position:'absolute', zIndex:999, bottom:90, width:'100%'}}>
+            <List containerStyle={{ borderTopWidth: 0, borderBottomWidth: 0 }}>
+              <FlatList
+                data={[{key: 'Your location', value: 'Walk 0.3 mi (5 mins)', icon: 'accessibility'},
+                  {key: 'Roosevelt Island', value: 'Pick up package from Amazon Locker next to F', icon:'work'},
+                  {key:'Roosevelt Island F train', value: 'Coney Island - Stillwell Av', icon: 'train'},
+                  {key:'34 Street - Herald Sq Station', value: 'Transit to R train', icon: 'train'},
+                  {key:'City Hall (New York City Hall)', value: 'Drop off package at Amazon Locker next exit', icon: 'work'},
+                  {key:'Destination', value: 'Walk 0.1 mi (2 mins)', icon: 'accessibility'}]}
+                renderItem={({ item }) => (
+                <ListItem
+                  leftIcon={{name:item.icon}}
+                  title={item.key}
+                  subtitle={item.value}
+                  subtitleStyle={{ fontSize: 10}}
+                  titleStyle={{ fontSize: 14}}
+                  containerStyle={{ borderBottomWidth: 0 }}
+                />
+              )}
+                ItemSeparatorComponent={this.renderSeparator}
+              />
+            </List>
+          </View>) : null}
+          { this.state.showQRCode ? (
+          <View style={{position:'absolute', zIndex:999, bottom:90, width:'100%', backgroundColor: 'white', paddingBottom: 20, paddingTop: 20}}>
+              <Text style={{fontSize: 16, textAlign:'center', marginBottom:10}}>Please type the following code at the locker</Text>
+              <Text style={{fontSize: 30, textAlign:'center', letterSpacing: 4}}>495293</Text>
+          </View>) : null}
+
+          <Button
+            raised
+            containerViewStyle={{width:'100%', marginLeft: 0}}
+            iconRight={{name: 'directions'}}
+            backgroundColor='#4885ed'
+            color='white'
+            title='Get Instruction'
+            onPress={this.toggleInstruction} />
+          <Button
+            raised
+            containerViewStyle={{width:'100%', marginLeft: 0}}
+            iconRight={{name: 'directions'}}
+            backgroundColor='#ff9900'
+            color='white'
+            title='Get the package'
+            onPress={this.toggleQR} />
+      </View>
+    );
+  }
+}
+
 class HomeScreen extends React.Component {
   static navigationOptions = {
     title: 'Amazon Flex',
     headerStyle: { backgroundColor: '#146eb4' },
     headerTitleStyle: {
         fontSize: 40,
-        color: '#ff9900',
-        fontFamily: 'American Typewriter'
+        color: 'white',
         }
   };
   constructor(props) {
@@ -148,8 +295,8 @@ class HomeScreen extends React.Component {
           <View style={{position:'absolute', zIndex:999, width: 160, top:65}}>
             <List containerStyle={{ borderTopWidth: 0, borderBottomWidth: 0 }}>
               <FlatList
-                data={[{end: 'RI Station', start:'Cornell Tech', value: '$5'},
-                {end: '42nd St', start:'RI Station', value: '$10'},
+                data={[{end: 'City Hall', start:'RI Station', value: '$15'},
+                {end: '34nd St', start:'Cornell Tech', value: '$10'},
                 {end: '34th St', start:'63th St', value: '$7'},
                 {end: '14th St', start:'57th St', value: '$15'}]}
                 renderItem={({ item }) => (
@@ -190,102 +337,14 @@ class HomeScreen extends React.Component {
   }
 }
 
-class ChatScreen extends React.Component {
-  static navigationOptions = {
-    title: 'Detail Map',
-  };
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      startLocation: '',
-      endLocation: '',
-      routeLoaded: false,
-      showInstruction: false
-   };
-   this.toggleInstruction = this.toggleInstruction.bind(this)
-  }
-
-  renderSeparator = () => {
-    return (
-      <View
-        style={{
-          height: 1,
-          width: "90%",
-          backgroundColor: "#CED0CE",
-          marginLeft: "10%"
-        }}
-      />
-    );
-  };
-
-  toggleInstruction() {
-    this.setState({showInstruction: !this.state.showInstruction})
-  }
-
-  componentDidMount() {
-    const { params } = this.props.navigation.state;
-    this.setState({ startLocation: params.start });
-    this.setState({ endLocation: params.end });
-    let locationInfo = {
-      start: params.start,
-      end: params.end,
-      route: 1
-    }
-    setTimeout(() => {
-      this.refs.newWebView.postMessage(JSON.stringify(locationInfo));
-    }, 300);
-    this.setState({routeLoaded: true});
-  }
-
-  render() {
-    return (
-      <View style={styles.Container}>
-        <WebView
-          ref='newWebView'
-          source={ mapHTML }
-          style={{flex:1}}
-          />
-          { this.state.showInstruction ? (
-          <View style={{position:'absolute', zIndex:999, bottom:45, width:'100%'}}>
-            <List containerStyle={{ borderTopWidth: 0, borderBottomWidth: 0 }}>
-              <FlatList
-                data={[{key: 'Your location', value: 'Walk 0.3 mi (5 mins)', icon: 'accessibility'},
-                  {key: 'Roosevelt Island', value: 'Pick up package from Amazon Locker next to F', icon:'work'},
-                  {key:'Roosevelt Island F train', value: 'Coney Island - Stillwell Av', icon: 'train'},
-                  {key:'34 Street - Herald Sq Station', value: 'Transit to R train', icon: 'train'},
-                  {key:'City Hall (New York City Hall)', value: 'Drop off package at Amazon Locker next exit', icon: 'work'},
-                  {key:'Destination', value: 'Walk 0.1 mi (2 mins)', icon: 'accessibility'}]}
-                renderItem={({ item }) => (
-                <ListItem
-                  leftIcon={{name:item.icon}}
-                  title={item.key}
-                  subtitle={item.value}
-                  subtitleStyle={{ fontSize: 10}}
-                  titleStyle={{ fontSize: 14}}
-                  containerStyle={{ borderBottomWidth: 0 }}
-                />
-              )}
-                ItemSeparatorComponent={this.renderSeparator}
-              />
-            </List>
-          </View>) : null}
-          <Button
-            raised
-            containerViewStyle={{width:'100%', marginLeft: 0}}
-            iconRight={{name: 'directions'}}
-            backgroundColor='#4885ed'
-            color='white'
-            title='Get Instruction'
-            onPress={this.toggleInstruction} />
-      </View>
-    );
-  }
-}
 
 const SimpleApp = StackNavigator({
-  Home: { screen: HomeScreen },
+  Home: { screen: AppScreen },
+  Main: { screen: HomeScreen},
   Chat: { screen: ChatScreen }
+},{
+  headerMode: 'screen'
 });
 
 export default class App extends React.Component {
